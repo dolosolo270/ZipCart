@@ -1,0 +1,88 @@
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #0f0f0f;
+  color: white;
+}
+
+/* Updated Header for Dropdown Alignment */
+.header {
+  padding: 15px;
+  font-size: 20px;
+  font-weight: bold;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #1c1c1c;
+}
+
+.products {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 10px;
+}
+
+.card {
+  background: #1c1c1c;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+/* General Button (stays 100% for product cards) */
+button {
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: #00c853;
+  color: white;
+  width: 100%;
+  cursor: pointer;
+}
+
+/* Specific Dropdown Styles */
+.profile-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  right: 0;
+  background-color: #1c1c1c;
+  min-width: 250px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.5);
+  z-index: 100;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #333;
+}
+
+/* Hover to show profile menu */
+.profile-dropdown:hover .dropdown-content {
+  display: block;
+}
+
+/* Header/Profile specific buttons (Prevents them from being 100% wide) */
+.profile-trigger {
+  width: auto !important;
+  background: #333 !important;
+  font-size: 14px;
+}
+
+.logout-box {
+  background: #ff3008 !important;
+  margin-top: 15px;
+  width: 100% !important; /* Logout stays wide inside the menu for easy clicking */
+}
+
+input, select {
+  width: 100%;
+  padding: 10px;
+  margin: 5px 0;
+  border-radius: 6px;
+  border: none;
+  background: #2c2c2c; /* Darker input for street look */
+  color: white;
+}
