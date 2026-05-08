@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZipCart | Speed Meets Pressure </title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --main-green: #00ff9c; 
+            --dark-bg: #0a0a0a; 
+            --card-bg: #141414; 
+            --input-bg: #1f1f1f;
+            --neon-glow: rgba(0, 255, 156, 0.3);
+        }
+        
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background: var(--dark-bg);
+            background-image: radial-gradient(circle at 50% 50%, #1a1a1a 0%, #0a0a0a 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .auth-card {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 400px;
+            padding: 40px;
+            border-radius: 32px;
+            border: 1px solid #222;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.9);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .auth-card::before {
+            content: "";
+            position: absolute;
+            top: -2px; left: -2px; right: -2px; height: 100px;
+            background: linear-gradient(180deg, var(--neon-glow), transparent);
+            pointer-events: none;
+        }
+
+        .logo {
+            font-size: 55px;
+            font-weight: 900;
+            color: var(--main-green);
+            text-transform: uppercase;
+            letter-spacing: -4px;
+            font-style: italic;
+            margin-bottom: 30px;
+            line-height: 1;
+            filter: drop-shadow(0 0 10px var(--neon-glow));
+        }
+
+        /* TOGGLE SWITCH */
+        .type-toggle {
+            display: flex;
+            background: #000;
+            padding: 4px;
+            border-radius: 16px;
+            margin-bottom: 25px;
+            border: 1px solid #222;
+        }
+        .type-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 800;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            color: #555;
+            letter-spacing: 1px;
+        }
+        .type-btn.active {
+            background: var(--main-green);
+            color: black;
+            box-shadow: 0 4px 15px var(--neon-glow);
+        }
+
+        /* PROMO STYLING */
+        .promo-text {
+            font-size: 12px;
+            color: var(--main-green);
+            background: rgba(0, 255, 156, 0.05);
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            border: 1px solid var(--main-green);
+            font-weight: 700;
+            line-height: 1.5;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        input, select {
+            width: 100%;
+            padding: 16px;
+            margin: 10px 0;
+            border-radius: 14px;
+            border: 1px solid #333;
+            background: var(--input-bg);
+            color: white;
+            box-sizing: border-box;
+            font-size: 15px;
+            outline: none;
+            transition: 0.3s;
+        }
+        input:focus, select:focus { 
+            border-color: var(--main-green); 
+            background: #252525;
+            box-shadow: 0 0 15px rgba(0, 255, 156, 0.1);
+        }
+
+        button.main-btn {
+            width: 100%;
+            padding: 18px;
+            margin-top: 20px;
+            border-radius: 14px;
+            border: none;
+            background: var(--main-green);
+            color: black;
+            font-weight: 900;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.3s;
+            position: relative;
+        }
+        button.main-btn:hover { 
+            transform: translateY(-3px); 
+            box-shadow: 0 15px 30px var(--neon-glow); 
+        }
+        button.main-btn:disabled {
+            background: #333;
+            color: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .seller-note {
+            font-size: 11px;
+            color: #888;
+            margin-top: 15px;
+            line-height: 1.5;
+        }
+
+        .switch-mode {
+            margin-top: 30px;
+            font-size: 14px;
+            color: #666;
+        }
+        .switch-mode span {
+            color: var(--main-green);
+            cursor: pointer;
+            font-weight: 800;
+            text-decoration: underline;
+            text-underline-offset: 4px;
+        }
+
+        .hidden { display: none; }
+        
+        /* Transition Animation */
+        .fade-in { animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="auth-card">
+        <div class="logo">ZipCart</div>
+
+        <div class="type-toggle">
+            <div id="custToggle" class="type-btn active" onclick="setRole('customer')">CUSTOMER</div>
+            <div id="sellToggle" class="type-btn" onclick="setRole('seller')">SELLER</div>
+        </div>
+
+        <h2 id="formTitle" style="margin-top:0; font-size: 24px; font-weight: 900;">Sign In</h2>
+
+        <div id="customerPromo" class="promo-text hidden">
+            ⚡ FLASH PROMO: The 25th & 50th sign-ups get their first order 100% MATCHED!
+        </div>
+
+        <div id="authFields" class="fade-in">
+            <input type="email" id="email" placeholder="Email Address">
+            <input type="password" id="password" placeholder="Password">
+
+            <div id="signUpFields" class="hidden fade-in">
+                <input type="text" id="userName" placeholder="Full Name">
+                <div id="sellerExtra" class="hidden">
+                    <input type="text" id="shopName" placeholder="Shop Name">
+                    <select id="city">
+                        <option value="" disabled selected>Select Your City</option>
+                        <option value="all">ALL CITIES (757 Area)</option>
+                        <option value="norfolk">Norfolk</option>
+                        <option value="portsmouth">Portsmouth</option>
+                        <option value="chesapeake">Chesapeake</option>
+                        <option value="vabeach">Virginia Beach</option>
+                        <option value="suffolk">Suffolk</option>
+                        <option value="hampton">Hampton</option>
+                        <option value="newportnews">Newport News</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <button class="main-btn" id="submitBtn" onclick="handleAuth()">Sign In</button>
+
+        <div id="sellerApprovalNote" class="seller-note hidden">
+            * New shops undergo verification. Access is typically granted within 12 hours.
+        </div>
+
+        <div class="switch-mode" id="toggleText">
+            Don't have an account? <span onclick="toggleMode()">Sign Up</span>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDf1YrwkPav9mDv28XHF8FZYIJdk-R0Z5s",
+            authDomain: "hashdash-01.firebaseapp.com",
+            projectId: "hashdash-01"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentRole = 'customer'; 
+        let isSignUp = false;
+
+        window.setRole = (role) => {
+            currentRole = role;
+            document.getElementById('custToggle').classList.toggle('active', role === 'customer');
+            document.getElementById('sellToggle').classList.toggle('active', role === 'seller');
+            
+            if (isSignUp) {
+                document.getElementById('sellerExtra').classList.toggle('hidden', role !== 'seller');
+                document.getElementById('sellerApprovalNote').classList.toggle('hidden', role !== 'seller');
+                document.getElementById('customerPromo').classList.toggle('hidden', role !== 'customer');
+            }
+        };
+
+        window.toggleMode = () => {
+            isSignUp = !isSignUp;
+            document.getElementById('formTitle').innerText = isSignUp ? "Create Account" : "Sign In";
+            document.getElementById('submitBtn').innerText = isSignUp ? "Join ZipCart" : "Sign In";
+            document.getElementById('toggleText').innerHTML = isSignUp ? 
+                `Already a member? <span onclick="toggleMode()">Sign In</span>` : 
+                `Don't have an account? <span onclick="toggleMode()">Sign Up</span>`;
+            
+            document.getElementById('signUpFields').classList.toggle('hidden', !isSignUp);
+            setRole(currentRole); 
+        };
+
+        window.handleAuth = async () => {
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('password').value;
+            const btn = document.getElementById('submitBtn');
+
+            if(!email || !pass) return alert("Please fill in all fields.");
+            
+            btn.disabled = true;
+            btn.innerText = "Processing...";
+
+            try {
+                if (isSignUp) {
+                    const name = document.getElementById('userName').value;
+                    if(!name) throw new Error("Name is required!");
+
+                    const res = await createUserWithEmailAndPassword(auth, email, pass);
+                    const user = res.user;
+
+                    let winner = false;
+                    if (currentRole === 'customer') {
+                        const statsRef = doc(db, "app_data", "stats");
+                        await updateDoc(statsRef, { customerCount: increment(1) });
+                        const snap = await getDoc(statsRef);
+                        const count = snap.data().customerCount;
+                        if (count === 25 || count === 50) winner = true;
+                    }
+
+                    const userData = {
+                        uid: user.uid,
+                        email: email,
+                        name: name,
+                        role: currentRole,
+                        isWinner: winner,
+                        createdAt: Date.now()
+                    };
+
+                    if (currentRole === 'seller') {
+                        userData.shopName = document.getElementById('shopName').value;
+                        userData.city = document.getElementById('city').value;
+                        userData.isVerified = false; 
+                        alert("Application Sent! Check back in 12 hours for verification.");
+                    } else if (winner) {
+                        alert("🎉 BOOM! You're a milestone winner. First order matched!");
+                    }
+
+                    await setDoc(doc(db, "users", user.uid), userData);
+                } else {
+                    await signInWithEmailAndPassword(auth, email, pass);
+                }
+            } catch (e) { 
+                alert(e.message); 
+                btn.disabled = false;
+                btn.innerText = isSignUp ? "Join ZipCart" : "Sign In";
+            }
+        };
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                if (userDoc.exists()) {
+                    const data = userDoc.data();
+                    if (data.role === 'seller') {
+                        if (data.isVerified) {
+                            window.location.href = "seller.html";
+                        } else {
+                            await signOut(auth);
+                            location.reload(); 
+                        }
+                    } else {
+                        window.location.href = "customer.html";
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
