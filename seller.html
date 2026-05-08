@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ZipCart | Checkout</title>
+    <style>
+        :root {
+            --brand-green: #00c853;
+            --brand-dark: #0f0f0f;
+            --card-bg: #1c1c1c;
+            --text-main: #ffffff;
+            --text-dim: #888888;
+            --street-accent: #00ff9c;
+        }
+
+        body { 
+            margin: 0; 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            background: var(--brand-dark); 
+            color: var(--text-main); 
+            padding: 20px; 
+        }
+
+        .header-area { 
+            display: flex; 
+            align-items: center; 
+            gap: 15px; 
+            margin-bottom: 25px; 
+        }
+
+        .back-btn { 
+            background: #222; 
+            border: 1px solid #333; 
+            color: white; 
+            padding: 10px 15px; 
+            border-radius: 12px; 
+            text-decoration: none; 
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .logo-title { font-size: 22px; font-weight: 900; color: var(--brand-green); text-transform: uppercase; letter-spacing: -1px; }
+
+        .section { 
+            background: var(--card-bg); 
+            padding: 20px; 
+            border-radius: 20px; 
+            margin-bottom: 20px; 
+            border: 1px solid #2c2c2c; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .section-title { 
+            font-size: 12px; 
+            color: var(--brand-green); 
+            text-transform: uppercase; 
+            letter-spacing: 2px; 
+            margin-bottom: 15px; 
+            font-weight: 800;
+        }
+
+        .item-row { 
+            display: flex; 
+            justify-content: space-between; 
+            padding: 12px 0; 
+            border-bottom: 1px solid #262626; 
+            font-size: 15px;
+        }
+
+        .fee-row { 
+            display: flex; 
+            justify-content: space-between; 
+            padding: 6px 0; 
+            font-size: 13px; 
+            color: var(--text-dim); 
+        }
+
+        .total-row { 
+            display: flex; 
+            justify-content: space-between; 
+            font-weight: 900; 
+            font-size: 22px; 
+            margin-top: 20px; 
+            color: var(--street-accent); 
+            border-top: 2px dashed #333;
+            padding-top: 15px;
+        }
+
+        label { 
+            display: block; 
+            font-size: 10px; 
+            color: var(--text-dim); 
+            margin-bottom: 5px; 
+            font-weight: 700; 
+            text-transform: uppercase;
+        }
+
+        input { 
+            width: 100%; 
+            padding: 16px; 
+            margin-bottom: 15px; 
+            border-radius: 12px; 
+            border: 1px solid #333; 
+            background: #111; 
+            color: white; 
+            box-sizing: border-box; 
+            font-size: 16px;
+            outline: none;
+        }
+
+        input:focus { border-color: var(--brand-green); }
+
+        .place-order-btn { 
+            width: 100%; 
+            padding: 18px; 
+            border: none; 
+            border-radius: 15px; 
+            background: var(--brand-green); 
+            color: white; 
+            font-weight: 900; 
+            cursor: pointer; 
+            font-size: 18px; 
+            text-transform: uppercase;
+            box-shadow: 0 10px 20px rgba(0, 200, 83, 0.2);
+            transition: transform 0.2s;
+        }
+
+        .place-order-btn:active { transform: scale(0.98); }
+        
+        .empty-state { text-align: center; padding: 40px 0; color: var(--text-dim); }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="header-area">
+        <a href="customer.html" class="back-btn">←</a>
+        <div class="logo-title">Secure Checkout</div>
+    </div>
+
+    <div id="checkoutContent">
+        <div class="section">
+            <div class="section-title">Order Summary</div>
+            <div id="itemList">
+                </div>
+            
+            <div style="margin-top: 15px;">
+                <div class="fee-row">
+                    <span>Subtotal</span>
+                    <span id="subtotal">$0.00</span>
+                </div>
+                <div class="fee-row">
+                    <span>Delivery Fee</span>
+                    <span>$0.00</span>
+                </div>
+                <div class="fee-row">
+                    <span>Service Fee</span>
+                    <span>$0.00</span>
+                </div>
+                <div class="total-row">
+                    <span>Total</span>
+                    <span id="orderTotal">$0.00</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Drop-off Info</div>
+            
+            <label>Full Delivery Address</label>
+            <input id="deliveryAddress" placeholder="Street, Apt, City, Zip">
+            
+            <label>Contact Phone</label>
+            <input id="phone" type="tel" placeholder="(757) 000-0000">
+
+            <label>Drop-off Instructions (Optional)</label>
+            <input id="notes" placeholder="e.g. Leave at side door">
+        </div>
+
+        <button class="place-order-btn" onclick="placeOrder()">Place Order Now</button>
+    </div>
+
+    <div id="emptyView" class="hidden empty-state">
+        <p>Your bag is empty.</p>
+        <a href="customer.html" class="place-order-btn" style="text-decoration:none; display:block;">Go Shopping</a>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, collection, addDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDf1YrwkPav9mDv28XHF8FZYIJdk-R0Z5s",
+            authDomain: "hashdash-01.firebaseapp.com",
+            projectId: "hashdash-01"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // ZIP CART: Retrieve the cart that was saved in customer.html
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        let currentUser = null;
+
+        const DELIVERY_FEE = 4.99;
+        const SERVICE_FEE = 1.50;
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                const userDoc = await getDoc(doc(db, \"users\", user.uid));
+                if (userDoc.exists() && userDoc.data().address) {
+                    document.getElementById('deliveryAddress').value = userDoc.data().address;
+                }
+                renderCart();
+            } else {
+                window.location.href = "index.html"; 
+            }
+        });
+
+        function renderCart() {
+            if (cart.length === 0) {
+                document.getElementById('checkoutContent').style.display = 'none';
+                document.getElementById('emptyView').classList.remove('hidden');
+                return;
+            }
+
+            const list = document.getElementById('itemList');
+            let subtotal = 0;
+            list.innerHTML = "";
+            
+            cart.forEach(item => {
+                subtotal += parseFloat(item.price);
+                list.innerHTML += `
+                    <div class="item-row">
+                        <span>${item.name}</span>
+                        <span style="font-family:monospace; font-weight:bold;">$${parseFloat(item.price).toFixed(2)}</span>
+                    </div>
+                `;
+            });
+
+            const finalTotal = subtotal + DELIVERY_FEE + SERVICE_FEE;
+            
+            document.getElementById('subtotal').innerText = `$${subtotal.toFixed(2)}`;
+            document.getElementById('orderTotal').innerText = `$${finalTotal.toFixed(2)}`;
+        }
+
+        window.placeOrder = async () => {
+            const addr = document.getElementById('deliveryAddress').value;
+            const phone = document.getElementById('phone').value;
+            const notes = document.getElementById('notes').value;
+
+            if (!addr || !phone) return alert("Missing delivery details!");
+            
+            // Street Logic: Button loading state
+            const btn = document.querySelector('.place-order-btn');
+            btn.innerText = "Processing...";
+            btn.disabled = true;
+
+            try {
+                const subtotal = cart.reduce((a, b) => a + parseFloat(b.price), 0);
+                const finalTotal = subtotal + DELIVERY_FEE + SERVICE_FEE;
+
+                await addDoc(collection(db, "orders"), {
+                    customerId: currentUser.uid,
+                    customerName: currentUser.displayName || currentUser.email,
+                    sellerId: cart[0].sellerId || "unknown", 
+                    items: cart,
+                    subtotal: subtotal,
+                    fees: DELIVERY_FEE + SERVICE_FEE,
+                    total: finalTotal,
+                    address: addr,
+                    phone: phone,
+                    instructions: notes,
+                    status: "pending",
+                    createdAt: Date.now()
+                });
+
+                // Clear everything
+                localStorage.removeItem('cart');
+                alert("Order Placed! The plug is on the way.");
+                window.location.href = "customer.html"; 
+
+            } catch (e) {
+                alert("Order Failed: " + e.message);
+                btn.innerText = "Place Order Now";
+                btn.disabled = false;
+            }
+        };
+    </script>
+</body>
+</html>
