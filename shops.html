@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ZipCart | Menu</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --brand-green: #00c853; 
+            --brand-dark: #0f0f0f; 
+            --card-bg: #1c1c1c; 
+            --text-main: #ffffff;
+            --street-accent: #00ff9c;
+        }
+
+        body { 
+            margin: 0; 
+            font-family: 'Inter', sans-serif; 
+            background: var(--brand-dark); 
+            color: var(--text-main); 
+            padding-bottom: 100px; 
+        }
+
+        /* HEADER */
+        .header { 
+            padding: 20px; 
+            background: rgba(15,15,15,0.95); 
+            backdrop-filter: blur(10px);
+            position: sticky; 
+            top: 0; 
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #222;
+        }
+
+        .back-link { color: var(--brand-green); text-decoration: none; font-weight: 800; font-size: 14px; }
+
+        /* PRODUCT GRID */
+        .container { padding: 15px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+
+        .product-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid #222;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-img { width: 100%; aspect-ratio: 1/1; object-fit: cover; background: #222; }
+
+        .product-info { padding: 12px; }
+        .product-name { font-weight: 900; font-size: 14px; margin-bottom: 5px; text-transform: uppercase; }
+        
+        .price-select {
+            width: 100%;
+            background: #000;
+            color: var(--brand-green);
+            border: 1px solid #333;
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+
+        .add-btn {
+            width: 100%;
+            background: var(--brand-green);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 10px;
+            font-weight: 900;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        /* CART BAR */
+        .cart-bar {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: var(--brand-green);
+            padding: 20px;
+            border-radius: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0, 200, 83, 0.4);
+            z-index: 1000;
+            text-decoration: none;
+            color: white;
+            transition: 0.3s;
+        }
+
+        .cart-bar:active { transform: scale(0.95); }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a href="Shops.html" class="back-link">← BACK TO PLUGS</a>
+        <div id="shopNameDisplay" style="font-weight: 900; text-transform: uppercase;">Loading...</div>
+    </div>
+
+    <div class="container">
+        <div id="productGrid" class="grid">
+            </div>
+    </div>
+
+    <a href="checkout.html" id="cartBar" class="cart-bar hidden">
+        <div style="font-weight: 900; font-size: 18px;">VIEW BAG</div>
+        <div id="cartTotal" style="font-weight: 900; background: rgba(0,0,0,0.2); padding: 5px 15px; border-radius: 10px;">$0.00</div>
+    </a>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, doc, getDoc, collection, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDf1YrwkPav9mDv28XHF8FZYIJdk-R0Z5s",
+            authDomain: "hashdash-01.firebaseapp.com",
+            projectId: "hashdash-01"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const shopId = urlParams.get('shopId');
+
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = "index.html";
+            } else {
+                loadShopData();
+                updateCartBar();
+            }
+        });
+
+        async function loadShopData() {
+            if (!shopId) return;
+
+            // Get Shop Title
+            const shopDoc = await getDoc(doc(db, "shops", shopId));
+            if (shopDoc.exists()) {
+                document.getElementById('shopNameDisplay').innerText = shopDoc.data().name;
+            }
+
+            // Listen to Products
+            const q = query(collection(db, "products"), where("sellerId", "==", shopId));
+            onSnapshot(q, (snap) => {
+                const grid = document.getElementById('productGrid');
+                grid.innerHTML = "";
+                snap.forEach(doc => {
+                    const p = doc.data();
+                    const pid = doc.id;
+
+                    let optionsHtml = p.priceOptions.map((opt, idx) => 
+                        `<option value="${idx}">${opt.label} - $${opt.price}</option>`
+                    ).join('');
+
+                    grid.innerHTML += `
+                        <div class="product-card">
+                            <img src="${p.img || 'https://via.placeholder.com/300'}" class="product-img">
+                            <div class="product-info">
+                                <div class="product-name">${p.name}</div>
+                                <select id="select-${pid}" class="price-select">
+                                    ${optionsHtml}
+                                </select>
+                                <button class="add-btn" onclick="addToCart('${pid}', '${p.name.replace(/'/g, "\\'")}')">ADD TO BAG</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            });
+        }
+
+        window.addToCart = (pid, name) => {
+            const select = document.getElementById(`select-${pid}`);
+            const selectedOptionText = select.options[select.selectedIndex].text;
+            const price = selectedOptionText.split('$')[1];
+            const label = selectedOptionText.split(' - ')[0];
+
+            cart.push({
+                id: pid,
+                name: `${name} (${label})`,
+                price: price,
+                sellerId: shopId
+            });
+
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartBar();
+        };
+
+        function updateCartBar() {
+            const bar = document.getElementById('cartBar');
+            if (cart.length > 0) {
+                bar.classList.remove('hidden');
+                const total = cart.reduce((sum, item) => sum + parseFloat(item.price), 0);
+                document.getElementById('cartTotal').innerText = `$${total.toFixed(2)}`;
+            } else {
+                bar.classList.add('hidden');
+            }
+        }
+    </script>
+</body>
+</html>
